@@ -18,13 +18,12 @@ public:
         double x,y;
         double vx,vy;
         double diff_x, diff_y;
+        double temp;
 
         ros::Time current_time;
         ros::Time previous_time;
 
         nav_msgs::Odometry data;
-
-
 
     // Constructor
     SubandPub()
@@ -34,9 +33,10 @@ public:
 
 
             // public variables
-         yaw,angularv, linearv, x, y, vx, vy= 0.0;
-
-
+        angularv, linearv, vx, vy, temp= 0;
+         x = 1.1641;
+         y = 1.2894;
+         yaw = 0.6959;
 
       // Setting the time variables
       current_time = ros::Time::now();
@@ -55,23 +55,35 @@ public:
 
  	// Setting the current time as now
       current_time = ros::Time::now();
-
-
-
        // Gettting linear x and angular z from odom/Twist and set them into variables
+
       angularv = msg->twist.twist.angular.z ;
+
+        // Eliminating the outliers
+      if (angularv > 10)
+      {
+        angularv = temp ;
+      }
+      else
+      {
+        temp = msg->twist.twist.angular.z;
+      }
+
       linearv = msg->twist.twist.linear.x;
+
+
+
 
        // setting dt
       double dt =(current_time-previous_time).toSec();
 
-
       double dyaw = angularv*dt;
-      yaw+=dyaw;
+      yaw=yaw+dyaw;
 
 
-      vx = linearv*sin(yaw);
-      vy = linearv*cos(yaw);
+     // calculating each part
+      vx = linearv*cos(yaw);
+      vy = linearv*sin(yaw);
 
       double dx = vx*dt;
       double dy = vy*dt;
@@ -84,18 +96,18 @@ public:
 
 // Comparing two diff values from odom topic and our algorithm
 
-      std::cout<<"x and y from our program : "<< x <<", "<< y << std::endl;
-      std::cout<<"x and y from odom/Pose topic: " << msg->pose.pose.position.x <<"," <<msg->pose.pose.position.y << std::endl;
+      std::cout<<"x and y from /prom: "<< x <<" , "<< y << std::endl;
+      std::cout<<"x and y from /odom: " << msg->pose.pose.position.x <<" , " <<msg->pose.pose.position.y << std::endl;
 
-      diff_x = msg->pose.pose.position.x -x;
-      diff_y = msg->pose.pose.position.y -y;
-
-      std::cout<<"x y diff" << diff_x << "," << diff_y << std::endl;
 
       data.pose.pose.position.x = x;
       data.pose.pose.position.y = y;
+
+
       pub.publish(data);
-    previous_time = current_time;
+      previous_time = current_time;
+
+
 
 
     }
