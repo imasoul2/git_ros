@@ -1,0 +1,4 @@
+<launch>
+  <node pkg="find_xy_pkg" type= "simple_xy" name ="find_xy" output="screen">
+  </node>
+</launch>
