@@ -1,0 +1,6 @@
+float64[7] coordinates
+float64 precision
+---
+uint32 result
+---
+uint32 feedback

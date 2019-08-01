@@ -1,0 +1,80 @@
+#! /usr/bin/env python
+
+import sys, time
+import roslib
+import rospy
+import os
+import sys
+import argparse
+import cv2
+from cv_bridge import CvBridge
+import numpy as np
+from std_msgs.msg import Int64
+from sensor_msgs.msg import (
+Image,
+)
+
+class screen_test:
+
+    def __init__(self):
+        #self.image = None
+        self.bridge = CvBridge()
+        self.loop_rate = rospy.Rate(1)
+        self.image_pub = rospy.Publisher('/robot/xdisplay',Image, latch = True)
+        self.image_sub = rospy.Subscriber('/usb_cam/image_raw', Image, self.callback, queue_size = 1)
+        self.gui_sub = rospy.Subscriber('/gui_select', Int64, self.gui_callback, queue_size = 1)
+        self.gui_select = 0
+
+    def gui_callback(self, data):
+        self.gui_select = data.data
+
+    def callback(self, msg):
+        #self.image_pub.publish(msg)
+        cv_image = self.bridge.imgmsg_to_cv2(msg,desired_encoding = "bgr8")
+
+        font = cv2.FONT_HERSHEY_SIMPLEX
+        y0, dy = 20,30
+        fontScale = 0.8
+        fontColor = (255,255,255)
+        lineType = 2
+
+        menu_options= {
+            0: "Menu:\n1. Continuously recognise\n2. Train new face\n3. Update database\n4. Exit",
+            1: "Choose how you want to interact with Baxter:\n1. Hello\n2. Handshake\n3. Dab\n4. Dance"
+        }
+
+        text = menu_options[self.gui_select]
+
+        for i, line in enumerate(text.split('\n')):
+            y = y0+i*dy
+            cv2.putText(cv_image, line,
+            (20,y),
+            font,
+            fontScale,
+            fontColor,
+            lineType)
+
+        self.image_pub.publish(self.bridge.cv2_to_imgmsg(cv_image,'bgr8'))
+        cv2.imshow("Image Window", cv_image)
+        cv2.waitKey(3)
+
+    def start(self):
+        print "Starting..."
+
+        while not rospy.is_shutdown():
+            self.loop_rate.sleep()
+
+def main(args):
+
+    rospy.init_node('screen_test', anonymous = True)
+    ic = screen_test()
+    ic.start()
+
+    try:
+        rospy.spin()
+    except KeyboardInterrupt:
+        print "Shutting down..."
+    cv2.destroyAllWindows()
+
+if __name__ == '__main__':
+    main(sys.argv)

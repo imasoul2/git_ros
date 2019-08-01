@@ -1,0 +1,10 @@
+<launch>
+
+
+<node pkg = "face_recognition" type = "face_recognition" name= "face_recognition" output= "screen">
+</node>
+<node pkg="face_recognition" type = "face_rec_client" name="face_recognition_client" output = "screen">
+</node>
+
+
+</launch>

@@ -1,0 +1,16 @@
+<launch>
+
+
+	<node pkg = "baxter_movement" type = "leftHand.py" name ="left_hand" output = "screen">
+	</node>
+
+	<node pkg = "baxter_movement" type = "rightHand.py" name ="right_hand" output = "screen">
+	</node>
+
+	<node pkg = "baxter_movement" type = "head.py" name ="head" output = "screen">
+	</node>
+
+	<node pkg = "baxter_movement" type = "movementService.py" name ="baxter_motion_server" output = "screen">
+	</node>
+
+</launch>
